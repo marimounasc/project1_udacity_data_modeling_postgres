@@ -85,6 +85,7 @@ In addition to the data files, the project workspace includes six files:
 4. ```etl.py``` reads and processes files from song_data and log_data and loads them into your tables
 5. ```sql_queries.py``` contains all your sql queries
 6. ```README.md``` provides discussion on your project.
+7. ```requirements.txt``` provides the information and versions of packages needed to run project
 
 
 ### ETL process
@@ -101,3 +102,4 @@ To generate the tables in the database run:
 And then to run the ETL-Pipeline run the following script:
 
 ```python etl.py```
+
