@@ -2,18 +2,42 @@
 > In this project, I apply what I've learned on data modeling with Postgres and build an ETL pipeline using Python. To complete the project, I needed to define fact and dimension tables for a star schema for a particular analytic focus, and write an ETL pipeline that transfers data from files in two local directories into these tables in Postgres using Python and SQL.
 
 ## Table of Contents
-* [General Info](#general-information)
+* [General Information](#general-information)
 * [Technologies Used](#technologies-used)
 * [Datasets](#datasets)
-* [Screenshots](#screenshots)
-* [Setup](#setup)
-* [Usage](#usage)
+* [Project Template](#project-template)
+* [ETL process](#etl-process)
+
 
 ## General information
 
 A startup called Sparkify wants to analyze the data they've been collecting on songs and user activity on their new music streaming app. The analytics team is particularly interested in understanding what songs users are listening to. Currently, they don't have an easy way to query their data, which resides in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.
 
 They'd like a data engineer to create a Postgres database with tables designed to optimize queries on song play analysis, and bring you on the project. Your role is to create a database schema and ETL pipeline for this analysis. You'll be able to test your database and ETL pipeline by running queries given to you by the analytics team from Sparkify and compare your results with their expected results.
+
+Using the song and log datasets, you'll need to create a star schema optimized for queries on song play analysis. This includes the following tables.
+
+#### Fact Table
+1. Songplays - records in log data associated with song plays i.e. records with page NextSong
+```songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent```
+
+#### Dimension tables 
+
+2. users - users in the app
+```user_id, first_name, last_name, gender, level```
+
+2. songs - songs in music database
+```song_id, title, artist_id, year, duration```
+
+3. artists - artists in music database
+```artist_id, name, location, latitude, longitude```
+
+4. time - timestamps of records in songplays broken down into specific units
+```start_time, hour, day, week, month, year, weekday```
+
+Entity Relationship Diagram:
+
+![alt text](https://user-images.githubusercontent.com/32474126/101626498-5b96bc80-3a1d-11eb-9e0f-7c7d59637323.png)
 
 ## Technologies Used
 
@@ -50,29 +74,30 @@ And below is an example of what the data in a log file, 2018-11-12-events.json, 
 The directory that contains this dataset: ```data/log_data```
 These files are used to populate fact table ```songplays``` and to populate the dimension tables ```users``` and ```time```.
 
-### Database schema 
 
-Using the song and log datasets, you'll need to create a star schema optimized for queries on song play analysis. This includes the following tables.
+### Project Template
 
-#### Fact Table
-1. Songplays - records in log data associated with song plays i.e. records with page NextSong
-```songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent```
+In addition to the data files, the project workspace includes six files:
 
-#### Dimension tables 
+1. ```test.ipynb``` displays the first few rows of each table to let you check your database.
+2. ```create_tables.py``` drops and creates your tables
+3. ```etl.ipynb``` reads and processes a single file from song_data and log_data and loads the data into your tables
+4. ```etl.py``` reads and processes files from song_data and log_data and loads them into your tables
+5. ```sql_queries.py``` contains all your sql queries
+6. ```README.md``` provides discussion on your project.
 
-2. users - users in the app
-```user_id, first_name, last_name, gender, level```
 
-2. songs - songs in music database
-```song_id, title, artist_id, year, duration```
+### ETL process
 
-3. artists - artists in music database
-```artist_id, name, location, latitude, longitude```
+ETL consists of implementing two functions present in ```etl.py```
 
-4. time - timestamps of records in songplays broken down into specific units
-```start_time, hour, day, week, month, year, weekday```
+```process_song_file```: Process song dataset and transferred to databases
+```process_log_file```: Process log dataset and transferred to databases
 
-Entity Relationship Diagram:
+To generate the tables in the database run:
 
-![alt text](https://user-images.githubusercontent.com/32474126/101626498-5b96bc80-3a1d-11eb-9e0f-7c7d59637323.png)
+```python create_tables.py```
 
+And then to run the ETL-Pipeline run the following script:
+
+```python etl.py```
