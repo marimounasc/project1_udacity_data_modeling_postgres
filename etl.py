@@ -7,7 +7,7 @@ from sql_queries import *
 
 def process_song_file(cur, filepath):
     """
-    This function read the file, get the song and artist informations and use these informations to populate song and artist dimension tables
+    Description: This function read the file, get the song and artist informations and use these informations to populate song and artist dimension tables
     
     Args:
         cur: cursor object
@@ -16,23 +16,20 @@ def process_song_file(cur, filepath):
     Returns: 
         None
     """
-    # open song file
     df = pd.read_json(filepath, lines=True)
-
-    # insert song record
-    song_data = df[['song_id', 'title', 'artist_id',
-                    'year', 'duration']].values.tolist()[0]
-    cur.execute(song_table_insert, song_data)
     
     # insert artist record
-    artist_data = df[['artist_id', 'artist_name', 'artist_location',
-                      'artist_latitude', 'artist_longitude']].values.tolist()[0]
+    artist_data = df[['artist_id', 'artist_name', 'artist_location', 'artist_latitude', 'artist_longitude']].values[0].tolist()
     cur.execute(artist_table_insert, artist_data)
+    
+    # insert song record
+    song_data = df[['song_id', 'title', 'artist_id', 'year', 'duration']].values[0].tolist()
+    cur.execute(song_table_insert, song_data)
 
 
 def process_log_file(cur, filepath):
     """
-    This function read the file, get the user and time informations and use these informations to populate users and time dimension tables
+    Description: This function read the file, get the user and time informations and use these informations to populate users and time dimension tables
     
     Args:
         cur: cursor object
@@ -41,7 +38,6 @@ def process_log_file(cur, filepath):
     Returns: 
         None
     """
-    # open log file
     df = pd.read_json(filepath, lines=True)
 
     # filter by NextSong action
@@ -49,24 +45,22 @@ def process_log_file(cur, filepath):
 
     # convert timestamp column to datetime
     t = pd.to_datetime(df['ts'], unit='ms')
+    df['ts'] = pd.to_datetime(df['ts'], unit='ms')
     
     # insert time data records
-    time_data = (t.ts, t.ts.dt.hour , t.ts.dt.day , t.ts.dt.weekofyear , t.ts.dt.month , t.ts.dt.year , t.ts.dt.weekday)
-    column_labels = ('ts', 'hour', 'day', 'week_of_year', 'month', 'year', 'weekday')
-    time_df = pd.concat(time_data, axis=1, keys=column_labels)
+    time_data = (t, t.dt.hour, t.dt.day, t.dt.week, t.dt.month, t.dt.year, t.dt.weekday)
+    column_labels = ('start_time', 'hour', 'day', 'week', 'month', 'year', 'weekday')
+    time_df = pd.DataFrame.from_dict(dict(zip(column_labels, time_data)))
 
     for i, row in time_df.iterrows():
         cur.execute(time_table_insert, list(row))
 
     # load user table
     
-    user_df = df[['userId', 'firstName', 'lastName', 'gender', 'level']]
+    user_df = df[["userId", "firstName", "lastName", "gender", "level"]]
+    user_df = user_df.drop_duplicates()
 
     # insert user records
-    for i, row in user_df.iterrows():
-        cur.execute(user_table_insert, row)
-
-    # insert songplay records
     for index, row in df.iterrows():
         
         # get songid and artistid from song and artist tables
@@ -85,7 +79,7 @@ def process_log_file(cur, filepath):
 
 def process_data(cur, conn, filepath, func):
     """
-    This function get and read all the files in filepath, interate and passed them to the respective function
+    Description: This function get and read all the files in filepath, interate and passed them to the respective function
     
     Args:
         cur: cursor object
@@ -95,7 +89,6 @@ def process_data(cur, conn, filepath, func):
         
     Returns:
         None
-
     """
     # get all files matching extension from directory
     all_files = []
@@ -107,7 +100,7 @@ def process_data(cur, conn, filepath, func):
     # get total number of files found
     num_files = len(all_files)
     print('{} files found in {}'.format(num_files, filepath))
-
+    
     # iterate over files and process
     for i, datafile in enumerate(all_files, 1):
         func(cur, datafile)
@@ -116,6 +109,16 @@ def process_data(cur, conn, filepath, func):
 
 
 def main():
+    """
+     Description: This function connects to the database and provides the cursor, as well as reading and processing the data.
+     
+     Args:
+         None
+         
+    Returns:
+        None
+
+    """
     conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
     cur = conn.cursor()
 
@@ -127,3 +130,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+   
